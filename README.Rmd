@@ -1,0 +1,105 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# snowbill
+
+> Suprevised Learning Practices Using 'tidymodels'
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+## Overview
+
+[Livedoorニュースコーパス](https://www.rondhuit.com/download.html#ldcc)を用いた文書分類について、日本語テキストの分かち書きに使うトークナイザを差し替えながら試しています。
+
+## Summary of Dataset
+
+コーパスのカテゴリごとの平均的な分量は次のようになっています。
+
+```{r summary}
+suppressPackageStartupMessages({
+  require(targets)
+  require(tidymodels)
+  require(textrecipes)
+})
+tidymodels::tidymodels_prefer(quiet = TRUE)
+
+tar_read(nchar_summary)
+
+tar_read(nchar_density)
+```
+
+## About Tokenizers
+
+次のRパッケージによる分かち書きを試しています。
+
+- [paithiov909/segmntr](https://github.com/paithiov909/segmntr)
+- [paithiov909/gibasa](https://github.com/paithiov909/gibasa)
+
+ここでは文字列の正規化などはおこなわず、コーパスの本文を直接分かち書きしています。gibasaについては付与された品詞にもとづいて語彙をフィルタしています。
+
+segmntrは、点予測にもとづく形態素解析器である[Vaporette](https://github.com/daac-tools/vaporetto)のラッパーです。VaporetteのバイナリはMeCabよりも高速ですが、segmntrでは関数を呼ぶたびにモデルファイルを読みこむ時間を要するため、ここではgibasa（MeCabをマルチスレッドで呼んでいる）のほうが解析速度が速くなっています。
+
+```{r bench}
+source("R/rec.R")
+
+dummy_data <-
+  tibble::tibble(
+    doc_id = seq_along(ldccr::NekoText),
+    body = ldccr::NekoText,
+    category = sample.int(9, length(ldccr::NekoText), replace = TRUE)
+  )
+
+
+bench <-
+  microbenchmark::microbenchmark(
+    segmntr = segmntr_rec(dummy_data) |>
+      recipes::prep() |>
+      recipes::bake(new_data = NULL),
+    gibasa = gibasa_rec(dummy_data) |>
+      recipes::prep() |>
+      recipes::bake(new_data = NULL),
+    times = 5,
+    check = NULL
+  )
+
+bench
+
+ggplot2::autoplot(bench)
+```
+
+### Modeling
+
+tidymodelsを用いてXGBoostのモデルを学習しています。わずかな差ですが、segmntrを用いたほうが精度のよいモデルを学習できています。
+
+```{r best-models}
+tar_read(best_models)
+```
+
+ここで最終的に作成されるモデルは次のようになります。
+
+```{r last-fit}
+(wflow <- tar_read(corp_wflow))
+
+(corpus <- tar_read(corp_split))
+
+ret <- tune::last_fit(wflow, corpus)
+```
+
+```{r metrics}
+ret |>
+  tune::collect_predictions() |>
+  yardstick::f_meas(truth = category, estimate = .pred_class)
+```
