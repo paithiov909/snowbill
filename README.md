@@ -3,7 +3,7 @@
 
 # snowbill
 
-> Suprevised Learning Practices Using ‘tidymodels’
+> Supervised Learning Practices Using ‘tidymodels’
 
 <!-- badges: start -->
 <!-- badges: end -->
