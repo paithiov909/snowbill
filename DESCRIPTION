@@ -1,7 +1,7 @@
 Type: Package
 Package: snowbill
-Title: Suprevised Learning Practices Using 'tidymodels'
-Version: 0.1.0
+Title: Supervised Learning Practices Using 'tidymodels'
+Version: 0.1.1
 Authors@R: 
     person("Akiru", "Kato", , "paithiov909@gmail.com", role = c("aut", "cre"))
 Maintainer: Akiru Kato <paithiov909@gmail.com>
@@ -14,6 +14,7 @@ Imports:
     ldccr,
     rlang,
     segmntr,
+    sudachir,
     targets,
     text2vec,
     textrecipes,

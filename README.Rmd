@@ -22,7 +22,7 @@ knitr::opts_chunk$set(
 
 ## Overview
 
-[Livedoorニュースコーパス](https://www.rondhuit.com/download.html#ldcc)を用いた文書分類について、日本語テキストの分かち書きに使うトークナイザを差し替えながら試しています。
+[livedoorニュースコーパス](https://www.rondhuit.com/download.html#ldcc)を用いた文書分類について、日本語テキストの分かち書きに使うトークナイザを差し替えながら試しています。
 
 ## Summary of Dataset
 
@@ -47,6 +47,7 @@ tar_read(nchar_density)
 
 - [paithiov909/segmntr](https://github.com/paithiov909/segmntr)
 - [paithiov909/gibasa](https://github.com/paithiov909/gibasa)
+- [uribo/sudachir](https://github.com/uribo/sudachir)
 
 ここでは文字列の正規化などはおこなわず、コーパスの本文を直接分かち書きしています。gibasaについては付与された品詞にもとづいて語彙をフィルタしています。
 
@@ -60,15 +61,21 @@ dummy_data <-
     doc_id = seq_along(ldccr::NekoText),
     body = ldccr::NekoText,
     category = sample.int(9, length(ldccr::NekoText), replace = TRUE)
-  )
-
+  ) |>
+  dplyr::filter(nchar(body) > 50)
 
 bench <-
   microbenchmark::microbenchmark(
-    segmntr = segmntr_rec(dummy_data) |>
+    tokenizers = default_rec(dummy_data) |>
       recipes::prep() |>
       recipes::bake(new_data = NULL),
     gibasa = gibasa_rec(dummy_data) |>
+      recipes::prep() |>
+      recipes::bake(new_data = NULL),
+    sudachir = sudachir_rec(dummy_data) |>
+      recipes::prep() |>
+      recipes::bake(new_data = NULL),
+    segmntr = segmntr_rec(dummy_data) |>
       recipes::prep() |>
       recipes::bake(new_data = NULL),
     times = 5,
@@ -82,7 +89,7 @@ ggplot2::autoplot(bench)
 
 ### Modeling
 
-tidymodelsを用いてXGBoostのモデルを学習しています。わずかな差ですが、segmntrを用いたほうが精度のよいモデルを学習できています。
+tidymodelsを用いてXGBoostのモデルを学習しています。わずかな差ですが、segmntrを用いたときが精度のよいモデルを学習できています。
 
 ```{r best-models}
 tar_read(best_models)

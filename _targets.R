@@ -5,13 +5,13 @@ tar_option_set(
   packages = c("tidymodels", "textrecipes")
 )
 # tar_make_clustermq() configuration (okay to leave alone):
-options(clustermq.scheduler = "multicore")
+# options(clustermq.scheduler = "multicore")
 
 tar_source()
 
 # Replace the target list below with your own:
 list(
-  tar_target(raw_data, read_corpus(1)),
+  tar_target(raw_data, read_corpus(.1)),
   tar_target(corp_nchar, get_nchar(raw_data)),
   tar_target(nchar_summary, summarize_nchar(corp_nchar)),
   tar_target(nchar_density, plot_nchar(corp_nchar)),
@@ -21,8 +21,11 @@ list(
   tar_target(tuned_models,
     workflowsets::workflow_set(
       preproc = list(
-        segmntr = segmntr_rec(rsample::training(corp_split)),
-        gibasa = gibasa_rec(rsample::training(corp_split))
+        default = default_rec(rsample::training(corp_split)),
+        gibasa = gibasa_rec(rsample::training(corp_split)),
+        gibasa_with_filter = gibasa_rec2(rsample::training(corp_split)),
+        sudachir = sudachir_rec(rsample::training(corp_split)),
+        segmntr = segmntr_rec(rsample::training(corp_split))
       ),
       models = list(xgb_spec()),
       cross = FALSE
