@@ -88,15 +88,15 @@ bench <-
 bench
 #> Unit: seconds
 #>        expr       min        lq      mean    median        uq       max neval
-#>  tokenizers  1.810579  1.821057  2.070419  1.830976  1.864882  3.024602     5
-#>      gibasa  6.515490  6.835027  7.073956  7.004209  7.045967  7.969086     5
-#>    sudachir 10.177166 10.204096 10.742806 10.298198 10.311038 12.723531     5
-#>     segmntr 20.304546 20.396370 20.528224 20.398717 20.718487 20.823000     5
-#>   cld
-#>  a   
-#>   b  
-#>    c 
-#>     d
+#>  tokenizers  1.666544  1.675393  1.770761  1.696340  1.811516  2.004011     5
+#>      gibasa  5.739378  6.169449  6.113071  6.174713  6.208225  6.273589     5
+#>    sudachir 10.276305 10.337284 15.326154 10.393506 10.631952 34.991725     5
+#>     segmntr 20.189705 20.309172 20.397947 20.406017 20.506926 20.577916     5
+#>  cld
+#>  a  
+#>  ab 
+#>   bc
+#>    c
 
 ggplot2::autoplot(bench)
 #> Coordinate system already present. Adding new coordinate system, which will
@@ -167,5 +167,5 @@ ret |>
 #> # A tibble: 1 × 3
 #>   .metric .estimator .estimate
 #>   <chr>   <chr>          <dbl>
-#> 1 f_meas  macro          0.819
+#> 1 f_meas  macro          0.841
 ```
